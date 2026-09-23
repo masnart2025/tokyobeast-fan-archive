@@ -1,0 +1,825 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ArchiveProgress from "../components/ArchiveProgress.astro";
+import NextRecommendation from "../components/NextRecommendation.astro";
+
+const articles = await getCollection(
+  "articles",
+  ({ data }) => data.draft === false
+);
+
+const articleIds = articles.map(
+  (article) => article.data.articleId
+);
+
+const recommendationArticles = articles
+  .map((article) => ({
+    articleId: article.data.articleId,
+    title: article.data.title,
+    description: article.data.description,
+    category: article.data.category,
+    topics: article.data.topics,
+    level: article.data.level,
+    slug: article.id,
+  }));
+
+const sections = [
+  {
+    label: "WORLD",
+    title: "世界観",
+    description:
+      "TOKYOBEASTの世界、歴史、社会、BEASTなどについて整理しています。",
+    href: "/world/",
+  },
+  {
+    label: "META",
+    title: "作品・サービス",
+    description:
+      "ゲーム、サービス、制作背景など、TOKYOBEASTという作品そのものについて。",
+    href: "/meta/",
+  },
+  {
+    label: "CHARACTERS",
+    title: "キャラクター",
+    description:
+      "BEASTやキャラクターのプロフィール、資料、登場情報を整理しています。",
+    href: "/characters/",
+  },
+  {
+    label: "FAN WORKS",
+    title: "同人作品",
+    description:
+      "TOKYOBEASTを題材に制作した二次創作作品を紹介しています。",
+    href: "/works/",
+  },
+];
+
+const infoLevels = [
+  {
+    label: "OFFICIAL",
+    text: "公式サイト・ゲーム・設定資料などから確認できる情報",
+  },
+  {
+    label: "INFERENCE",
+    text: "複数の公式情報を組み合わせた推察",
+  },
+  {
+    label: "THEORY",
+    text: "作品についての考察・仮説",
+  },
+  {
+    label: "FANON",
+    text: "個人的な解釈・妄想・二次創作設定",
+  },
+  {
+    label: "DOUJIN",
+    text: "同人作品の中でのみ成立する設定",
+  },
+];
+---
+
+<BaseLayout
+  title="TOKYOBEAST FAN ARCHIVE"
+  description="TOKYOBEASTについての公式情報、考察、二次創作設定、同人作品をまとめた個人ファンアーカイブ。"
+>
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-grid"></div>
+
+        <div class="hero-content">
+          <p class="eyebrow">TOKYOBEAST / FAN ARCHIVE</p>
+
+          <h1>
+            TOKYOBEAST
+            <span>FAN ARCHIVE</span>
+          </h1>
+
+          <p class="hero-lead">
+            TOKYOBEASTについて考えたこと、<br />
+            調べたこと、そして作ったものをまとめています。
+          </p>
+
+          <div class="hero-buttons">
+            <a href="about" class="button button-primary">
+              このサイトについて
+            </a>
+
+<a href="/world/" class="button button-secondary">
+  TOKYOBEASTを知る
+</a>
+          </div>
+        </div>
+
+        <div class="hero-corner hero-corner-tl"></div>
+        <div class="hero-corner hero-corner-br"></div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about" class="section about-section">
+        <div class="section-heading">
+          <p class="section-number">01</p>
+          <div>
+            <p class="section-label">ABOUT THIS ARCHIVE</p>
+            <h2>このサイトについて</h2>
+          </div>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-text">
+<p>
+  このサイトは、TOKYOBEASTについての情報を整理し、
+  そこから考えた考察や二次創作設定、
+  そしてそれらをもとに制作した同人作品をまとめた
+  個人ファンアーカイブです。
+</p>
+          </div>
+
+<ArchiveProgress
+  totalArticles={articles.length}
+  articleIds={articleIds}
+/>
+
+<NextRecommendation
+  articles={recommendationArticles}
+/>
+
+          <div class="info-levels">
+            <h3>INFORMATION LEVEL</h3>
+
+            {infoLevels.map((level) => (
+              <div class="level-row">
+                <span class={`badge badge-${level.label.toLowerCase()}`}>
+                  {level.label}
+                </span>
+                <span>{level.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPLORE -->
+      <section class="section explore-section">
+        <div class="section-heading">
+          <p class="section-number">02</p>
+          <div>
+            <p class="section-label">EXPLORE THE ARCHIVE</p>
+            <h2>アーカイブを探す</h2>
+          </div>
+        </div>
+
+        <div class="section-grid">
+          {sections.map((section, index) => (
+            <a href={section.href} class="archive-card">
+              <span class="card-number">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+
+              <span class={`badge badge-${section.label.toLowerCase().replace(" ", "-")}`}>
+                {section.label}
+              </span>
+
+              <h3>{section.title}</h3>
+
+              <p>{section.description}</p>
+
+              <span class="card-arrow">→</span>
+            </a>
+          ))}
+        </div>
+      </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    min-height: 680px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      radial-gradient(circle at 75% 45%, rgba(77, 225, 255, 0.13), transparent 30%),
+      radial-gradient(circle at 20% 70%, rgba(157, 91, 255, 0.1), transparent 35%),
+      #080a0f;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.14;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: linear-gradient(to bottom, transparent, black 25%, black 70%, transparent);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    width: min(1180px, calc(100% - 56px));
+    margin: 0 auto;
+    padding: 100px 0;
+  }
+
+  .eyebrow,
+  .section-label {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    color: #69e7ff;
+  }
+
+  .hero h1 {
+    margin: 22px 0 25px;
+    font-size: clamp(48px, 8vw, 110px);
+    line-height: 0.9;
+    font-weight: 950;
+    letter-spacing: -0.055em;
+  }
+
+  .hero h1 span {
+    display: block;
+    margin-top: 14px;
+    font-size: 0.42em;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+
+  .hero-lead {
+    max-width: 600px;
+    margin: 0;
+    font-size: clamp(15px, 2vw, 19px);
+    color: #b9c1ce;
+  }
+
+  .hero-buttons {
+    margin-top: 38px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .button {
+    display: inline-flex;
+    min-height: 48px;
+    padding: 0 22px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    transition: 0.2s;
+  }
+
+  .button:hover {
+    transform: translateY(-2px);
+  }
+
+  .button-primary {
+    border-color: #69e7ff;
+    background: #69e7ff;
+    color: #071016;
+  }
+
+  .button-secondary {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .hero-corner {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-color: rgba(105, 231, 255, 0.45);
+  }
+
+  .hero-corner-tl {
+    top: 34px;
+    left: 34px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+
+  .hero-corner-br {
+    right: 34px;
+    bottom: 34px;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+  }
+
+  .section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 110px 40px;
+  }
+
+  .dark-section {
+    max-width: none;
+    padding-left: max(40px, calc((100vw - 1200px) / 2));
+    padding-right: max(40px, calc((100vw - 1200px) / 2));
+    background: #0d1119;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .section-heading {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 50px;
+  }
+
+  .section-number {
+    margin: 3px 0 0;
+    font-size: 11px;
+    font-weight: 800;
+    color: #69e7ff;
+    letter-spacing: 0.1em;
+  }
+
+  .section-heading h2 {
+    margin: 5px 0 0;
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 80px;
+  }
+
+  .about-text {
+    font-size: 17px;
+    color: #b9c1ce;
+  }
+
+  .about-text p {
+    margin: 0 0 25px;
+  }
+
+  .info-levels {
+    padding: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.025);
+  }
+
+  .info-levels h3 {
+    margin: 0 0 20px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #69e7ff;
+  }
+
+  .level-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 12px;
+    color: #aeb6c4;
+  }
+
+  .badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px 8px;
+    border: 1px solid currentColor;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  .badge-official {
+    color: #69e7ff;
+  }
+
+  .badge-inference {
+    color: #9ca8ff;
+  }
+
+  .badge-theory {
+    color: #c89aff;
+  }
+
+  .badge-fanon {
+    color: #ff9fcf;
+  }
+
+  .badge-doujin {
+    color: #ffbd73;
+  }
+
+  .badge-characters {
+    color: #8ee5bb;
+  }
+
+  .badge-fan-works {
+    color: #ffbd73;
+  }
+
+  .explain-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 340px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #0d1119;
+  }
+
+  .explain-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+      linear-gradient(135deg, rgba(105, 231, 255, 0.08), transparent),
+      #111722;
+    text-align: center;
+  }
+
+  .explain-placeholder span {
+    margin-bottom: 12px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    opacity: 0.5;
+  }
+
+  .explain-placeholder strong {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+
+  .explain-content {
+    padding: 45px;
+  }
+
+  .explain-content h3 {
+    margin: 20px 0 15px;
+    font-size: 28px;
+  }
+
+  .explain-content p {
+    color: #aeb6c4;
+  }
+
+  .text-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #69e7ff;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+  .archive-card {
+    position: relative;
+    min-height: 280px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #0d1119;
+    transition: 0.25s;
+  }
+
+  .archive-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(105, 231, 255, 0.45);
+    background: #111722;
+  }
+
+  .card-number {
+    margin-bottom: 45px;
+    font-size: 10px;
+    opacity: 0.35;
+  }
+
+  .archive-card h3 {
+    margin: 18px 0 10px;
+    font-size: 23px;
+  }
+
+  .archive-card p {
+    margin: 0;
+    color: #9da7b5;
+    font-size: 12px;
+  }
+
+  .card-arrow {
+    margin-top: auto;
+    padding-top: 20px;
+    color: #69e7ff;
+    font-size: 20px;
+  }
+
+  .section-intro {
+    max-width: 700px;
+    margin: -20px 0 45px;
+    color: #aeb6c4;
+  }
+
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .topic-card {
+    min-height: 210px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.025);
+    transition: 0.2s;
+  }
+
+  .topic-card:hover {
+    border-color: #69e7ff;
+    transform: translateY(-3px);
+  }
+
+  .topic-card span {
+    font-size: 9px;
+    color: #69e7ff;
+    letter-spacing: 0.15em;
+  }
+
+  .topic-card strong {
+    margin-top: 25px;
+    font-size: 24px;
+  }
+
+  .topic-card small {
+    margin-top: 10px;
+    color: #8993a2;
+  }
+
+  .theory-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 50px;
+  }
+
+  .flow-item {
+    width: 240px;
+    min-height: 150px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #0d1119;
+  }
+
+  .flow-item strong {
+    margin-top: 16px;
+    font-size: 20px;
+  }
+
+  .flow-item small {
+    margin-top: 4px;
+    color: #8993a2;
+    font-size: 11px;
+  }
+
+  .flow-arrow {
+    font-size: 22px;
+    color: #69e7ff;
+  }
+
+  .empty-note {
+    padding: 25px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .empty-note span {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #69e7ff;
+  }
+
+  .empty-note p {
+    margin: 8px 0 0;
+    color: #8993a2;
+    font-size: 12px;
+  }
+
+  .fanon-message {
+    max-width: 800px;
+    padding: 45px;
+    border: 1px solid rgba(255, 159, 207, 0.25);
+    background: rgba(255, 159, 207, 0.025);
+  }
+
+  .fanon-message h3 {
+    margin: 22px 0 12px;
+    font-size: 32px;
+  }
+
+  .fanon-message p {
+    color: #adb5c1;
+  }
+
+  .fanon-message .warning {
+    margin-top: 30px;
+    color: #ff9fcf;
+    font-size: 12px;
+  }
+
+  .work-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 45px;
+    border: 1px solid rgba(255, 189, 115, 0.2);
+    background: rgba(255, 189, 115, 0.025);
+  }
+
+  .work-placeholder h3 {
+    margin: 18px 0 10px;
+    font-size: 28px;
+  }
+
+  .work-placeholder p {
+    max-width: 700px;
+    margin: 0;
+    color: #9da7b5;
+  }
+
+  .character-section {
+    background: #0d1119;
+    max-width: none;
+    padding-left: max(40px, calc((100vw - 1200px) / 2));
+    padding-right: max(40px, calc((100vw - 1200px) / 2));
+  }
+
+  .character-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .character-column {
+    min-height: 280px;
+    padding: 35px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.025);
+    transition: 0.2s;
+  }
+
+  .character-column:hover {
+    border-color: rgba(105, 231, 255, 0.4);
+    transform: translateY(-3px);
+  }
+
+  .character-column h3 {
+    margin: 25px 0 10px;
+    font-size: 28px;
+  }
+
+  .character-column p {
+    max-width: 500px;
+    color: #9da7b5;
+  }
+
+  .next-section {
+    padding: 100px 40px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      radial-gradient(circle at center, rgba(105, 231, 255, 0.08), transparent 40%),
+      #080a0f;
+  }
+
+  .next-section h2 {
+    margin: 12px 0 35px;
+    font-size: clamp(28px, 4vw, 48px);
+  }
+
+  .next-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .next-links a {
+    padding: 13px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #aeb6c4;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .next-links a:hover {
+    border-color: #69e7ff;
+    color: #69e7ff;
+  }
+
+  @media (max-width: 1000px) {
+    .section-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .topic-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .about-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hero {
+      min-height: 600px;
+    }
+
+    .hero-content {
+      width: calc(100% - 36px);
+    }
+
+    .section,
+    .dark-section,
+    .character-section {
+      padding: 75px 20px;
+    }
+
+    .section-heading {
+      margin-bottom: 35px;
+    }
+
+    .section-grid,
+    .topic-grid,
+    .character-columns,
+    .explain-card {
+      grid-template-columns: 1fr;
+    }
+
+    .explain-placeholder {
+      min-height: 240px;
+      border-right: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .explain-content {
+      padding: 30px;
+    }
+
+    .theory-flow {
+      flex-direction: column;
+    }
+
+    .flow-arrow {
+      transform: rotate(90deg);
+    }
+
+    .flow-item {
+      width: 100%;
+    }
+
+    .work-placeholder {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 30px;
+    }
+
+    .hero-corner {
+      width: 45px;
+      height: 45px;
+    }
+
+    .hero-corner-tl {
+      top: 20px;
+      left: 20px;
+    }
+
+    .hero-corner-br {
+      right: 20px;
+      bottom: 20px;
+    }
+  }
+</style>

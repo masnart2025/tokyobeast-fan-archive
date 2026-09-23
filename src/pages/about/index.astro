@@ -1,0 +1,786 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import NextRecommendation from "../../components/NextRecommendation.astro";
+import WorkViewer from "../../components/WorkViewer.astro";
+
+const articles = await getCollection(
+  "articles",
+  ({ data }) => data.draft === false
+);
+
+const articleMap = new Map(
+  articles.map((article) => [article.data.articleId, article])
+);
+
+const relationIds = [
+  "tokyo-beast-world",
+];
+
+const relationArticles = relationIds
+  .map((id) => articleMap.get(id))
+  .filter(Boolean);
+
+const recommendationArticles = articles.map((article) => ({
+  articleId: article.data.articleId,
+  title: article.data.title,
+  description: article.data.description,
+  category: article.data.category,
+  topics: article.data.topics,
+  level: article.data.level,
+  slug: article.id,
+}));
+---
+
+<BaseLayout
+  title="このサイトについて | TOKYOBEAST FAN ARCHIVE"
+  description="TOKYOBEAST FAN ARCHIVEについて。サイトの目的と、世界観を紹介する漫画を掲載しています。"
+>
+
+  <section class="page-hero">
+    <div class="page-hero-inner">
+
+      <p class="eyebrow">ABOUT THIS ARCHIVE</p>
+
+      <h1>
+        このサイトについて
+        <span>ABOUT</span>
+      </h1>
+
+      <p class="lead">
+        TOKYOBEASTについて考えたこと、<br />
+        調べたこと、そして作ったものをまとめています。
+      </p>
+
+    </div>
+  </section>
+
+
+<section class="content-section worldview-comic-section">
+
+  <div class="section-heading">
+    <span>03</span>
+    <div>
+      <p>START HERE / WORLDVIEW COMIC</p>
+      <h2>TOKYOBEASTの世界観</h2>
+    </div>
+  </div>
+
+  <div class="worldview-intro">
+
+    <p>
+      TOKYOBEASTの世界観を紹介する4ページ漫画。
+      2124年の社会、人間、レプリカント、BEAST、
+      そしてXENO-KARATEへと続く世界を描きます。
+    </p>
+
+<div class="worldview-notice">
+  <span>THEORY</span>
+  <p>
+    本漫画は非公式のファン作品であり、
+    公式情報をもとにした個人的な解釈・構成を含みます。
+    漫画内の表現や解釈は、公式設定そのものを示すものではありません。
+  </p>
+</div>
+
+</div>
+
+
+<WorkViewer
+  viewer={{
+    direction: "rtl",
+
+    pages: [
+      {
+        image: "/images/worldview-comic/page-01.png",
+        alt: "TOKYOBEAST 世界観紹介漫画 1ページ目",
+      },
+      {
+        image: "/images/worldview-comic/page-02.png",
+        alt: "TOKYOBEAST 世界観紹介漫画 2ページ目",
+      },
+      {
+        image: "/images/worldview-comic/page-03.png",
+        alt: "TOKYOBEAST 世界観紹介漫画 3ページ目",
+      },
+      {
+        image: "/images/worldview-comic/page-04.png",
+        alt: "TOKYOBEAST 世界観紹介漫画 4ページ目",
+      },
+    ],
+
+    alternatePages: [
+      {
+        image: "/images/worldview-comic/page-01-en.png",
+        alt: "TOKYOBEAST Worldview Comic page 1",
+      },
+      {
+        image: "/images/worldview-comic/page-02-en.png",
+        alt: "TOKYOBEAST Worldview Comic page 2",
+      },
+      {
+        image: "/images/worldview-comic/page-03-en.png",
+        alt: "TOKYOBEAST Worldview Comic page 3",
+      },
+      {
+        image: "/images/worldview-comic/page-04-en.png",
+        alt: "TOKYOBEAST Worldview Comic page 4",
+      },
+    ],
+
+    alternateDirection: "ltr",
+  }}
+/>
+
+<section class="relation-section">
+
+  <div class="section-heading">
+    <span>RELATION</span>
+    <div>
+      <p>RELATED ARTICLE</p>
+      <h2>関連する世界観</h2>
+    </div>
+  </div>
+
+  <div class="relation-list">
+
+    {
+      relationArticles.map((article) => (
+        <a
+          href={`/articles/${article.id}/`}
+          class="relation-card"
+        >
+          <div class="relation-meta">
+            <span class={`relation-level level-${article.data.level}`}>
+              {article.data.level.toUpperCase()}
+            </span>
+
+            <span class="relation-topics">
+              {article.data.topics.join(" / ").toUpperCase()}
+            </span>
+          </div>
+
+          <strong>{article.data.title}</strong>
+
+          <p>{article.data.description}</p>
+
+          <span class="relation-arrow">
+            READ ARTICLE →
+          </span>
+        </a>
+      ))
+    }
+
+  </div>
+
+</section>
+
+</section>
+
+<NextRecommendation
+  articles={recommendationArticles}
+/>
+
+</BaseLayout>
+
+
+<style>
+  .page-hero {
+    min-height: 430px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    background:
+      radial-gradient(
+        circle at 80% 50%,
+        rgba(105,231,255,.09),
+        transparent 35%
+      ),
+      #080a0f;
+  }
+
+  .page-hero-inner {
+    width: min(1100px, calc(100% - 50px));
+    margin: auto;
+  }
+
+  .eyebrow,
+  .section-heading p {
+    margin: 0;
+    color: #69e7ff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .2em;
+  }
+
+  .page-hero h1 {
+    margin: 20px 0;
+    font-size: clamp(40px, 7vw, 80px);
+    line-height: 1;
+    letter-spacing: -.04em;
+  }
+
+  .page-hero h1 span {
+    display: block;
+    margin-top: 12px;
+    font-size: .3em;
+    letter-spacing: .25em;
+    opacity: .45;
+  }
+
+  .lead {
+    color: #aeb6c4;
+    font-size: 16px;
+  }
+
+  .content-section {
+    max-width: 1100px;
+    margin: auto;
+    padding: 100px 25px;
+  }
+
+  .content-section.dark {
+    max-width: none;
+    padding-left: max(25px, calc((100vw - 1050px) / 2));
+    padding-right: max(25px, calc((100vw - 1050px) / 2));
+    background: #0d1119;
+    border-top: 1px solid rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+
+  .section-heading {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 45px;
+  }
+
+  .section-heading > span {
+    color: #69e7ff;
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .section-heading h2 {
+    margin: 5px 0 0;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.1;
+  }
+
+  .text-content {
+    max-width: 760px;
+    color: #b4bdca;
+    font-size: 16px;
+  }
+
+  .text-content p {
+    margin-bottom: 28px;
+  }
+
+  .section-intro {
+    max-width: 720px;
+    color: #9da7b5;
+    margin-bottom: 40px;
+  }
+
+  .levels {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .level {
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.025);
+  }
+
+  .level:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .level h3 {
+    margin: 18px 0 8px;
+    font-size: 22px;
+  }
+
+  .level p {
+    margin: 0;
+    color: #929cab;
+    font-size: 13px;
+  }
+
+  .badge {
+    display: inline-flex;
+    padding: 5px 8px;
+    border: 1px solid currentColor;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: .12em;
+  }
+
+  .official .badge,
+  .official-badge {
+    color: #69e7ff;
+  }
+
+  .inference .badge {
+    color: #9ca8ff;
+  }
+
+  .theory .badge {
+    color: #c89aff;
+  }
+
+  .fanon .badge {
+    color: #ff9fcf;
+  }
+
+  .doujin .badge {
+    color: #ffbd73;
+  }
+
+/* ==============================
+   WORLDVIEW COMIC
+============================== */
+
+.worldview-comic-section {
+  max-width: 1100px;
+}
+
+
+.worldview-intro {
+  max-width: 760px;
+  margin-bottom: 80px;
+}
+
+
+.worldview-intro > p {
+  margin: 0;
+
+  color: #b4bdca;
+
+  font-size: 15px;
+  line-height: 2;
+}
+
+
+.worldview-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  margin-top: 30px;
+  padding: 16px 18px;
+
+  border-left: 2px solid rgba(105, 231, 255, .45);
+
+  background: rgba(105, 231, 255, .025);
+}
+
+
+.worldview-notice > span {
+  flex-shrink: 0;
+
+  padding: 5px 7px;
+
+  border: 1px solid rgba(200, 154, 255, .45);
+
+  color: #c89aff;
+
+  background: rgba(200, 154, 255, .05);
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: .12em;
+}
+
+
+.worldview-notice p {
+  margin: 0;
+
+  color: #7f8a99;
+
+  font-size: 10px;
+  line-height: 1.8;
+}
+
+
+/* PAGES */
+
+.worldview-pages {
+  display: flex;
+  flex-direction: column;
+  gap: 110px;
+}
+
+
+.worldview-page {
+  position: relative;
+
+  width: min(840px, 100%);
+
+  margin: 0 auto;
+}
+
+
+.worldview-page img {
+  display: block;
+
+  width: 100%;
+  height: auto;
+
+  margin: 0;
+
+  border: 1px solid rgba(255,255,255,.12);
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.35);
+}
+
+
+/* PAGE NUMBER */
+
+.page-number {
+  position: absolute;
+
+  top: -30px;
+  left: 0;
+
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+
+.page-number span {
+  color: #69e7ff;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: .15em;
+}
+
+
+.page-number strong {
+  color: #dce5e8;
+
+  font-size: 16px;
+}
+
+
+.page-number small {
+  color: #56666d;
+
+  font-size: 8px;
+
+  letter-spacing: .1em;
+}
+
+
+/* CAPTION */
+
+.worldview-page figcaption {
+  margin-top: 14px;
+
+  color: #56666d;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: .15em;
+
+  text-align: center;
+}
+
+
+/* AFTER */
+
+.worldview-after {
+  max-width: 760px;
+
+  margin: 100px auto 0;
+
+  padding-top: 35px;
+
+  border-top: 1px solid rgba(255,255,255,.08);
+
+  text-align: center;
+}
+
+
+.worldview-after p {
+  margin: 0;
+
+  color: #7f8a99;
+
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+
+.worldview-after a {
+  display: inline-block;
+
+  margin-top: 20px;
+
+  color: #69e7ff;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: .15em;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+  .worldview-notice {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .worldview-pages {
+    gap: 75px;
+  }
+
+  .page-number {
+    top: -25px;
+  }
+
+}
+
+  .next-section {
+    padding: 90px 25px;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+
+  .next-section > p {
+    margin: 0;
+    color: #69e7ff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .2em;
+  }
+
+  .next-section h2 {
+    margin: 10px 0 35px;
+    font-size: 38px;
+  }
+
+  .next-grid {
+    width: min(1000px, 100%);
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .next-grid a {
+    padding: 28px;
+    text-align: left;
+    border: 1px solid rgba(255,255,255,.1);
+    background: #0d1119;
+    transition: .2s;
+  }
+
+  .next-grid a:hover {
+    border-color: #69e7ff;
+    transform: translateY(-3px);
+  }
+
+  .next-grid span {
+    display: block;
+    color: #69e7ff;
+    font-size: 9px;
+    letter-spacing: .15em;
+  }
+
+  .next-grid strong {
+    display: block;
+    margin-top: 20px;
+    font-size: 17px;
+  }
+
+  @media (max-width: 700px) {
+    .content-section {
+      padding: 70px 20px;
+    }
+
+    .levels,
+    .comic-placeholder,
+    .next-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .level:last-child {
+      grid-column: auto;
+    }
+
+    .comic-image {
+      min-height: 250px;
+      border-right: 0;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .comic-text {
+      padding: 30px;
+    }
+  }
+
+/* ==============================
+   RELATION
+============================== */
+
+.relation-section {
+  max-width: 760px;
+
+  margin: 90px auto 0;
+  padding-top: 45px;
+
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.relation-section .section-heading {
+  margin-bottom: 25px;
+}
+
+.relation-section .section-heading > span {
+  color: #69e7ff;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: .15em;
+}
+
+.relation-section .section-heading p {
+  margin: 0;
+
+  color: #69e7ff;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: .15em;
+}
+
+.relation-section .section-heading h2 {
+  margin: 5px 0 0;
+
+  font-size: 28px;
+}
+
+.relation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.relation-card {
+  display: block;
+
+  padding: 18px;
+
+  border: 1px solid rgba(255,255,255,.09);
+
+  background: rgba(255,255,255,.025);
+
+  color: inherit;
+  text-decoration: none;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .2s ease;
+}
+
+.relation-card:hover {
+  background: rgba(105,231,255,.04);
+
+  border-color: rgba(105,231,255,.3);
+
+  transform: translateY(-2px);
+}
+
+.relation-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 10px;
+}
+
+.relation-level {
+  padding: 4px 6px;
+
+  border: 1px solid currentColor;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: .1em;
+}
+
+.relation-level.level-official {
+  color: #69e7ff;
+}
+
+.relation-level.level-inference {
+  color: #9ca8ff;
+}
+
+.relation-level.level-theory {
+  color: #c89aff;
+}
+
+.relation-level.level-fanon {
+  color: #ff9fcf;
+}
+
+.relation-level.level-doujin {
+  color: #ffbd73;
+}
+
+.relation-topics {
+  color: #586970;
+
+  font-size: 8px;
+
+  letter-spacing: .08em;
+}
+
+.relation-card strong {
+  display: block;
+
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.relation-card p {
+  margin: 6px 0 0;
+
+  color: #7f8e94;
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.relation-arrow {
+  display: inline-block;
+
+  margin-top: 14px;
+
+  color: #69e7ff;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: .1em;
+}
+</style>

@@ -1,0 +1,391 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const articles = await getCollection(
+  "articles",
+  ({ data }) =>
+    data.category === "meta" &&
+    data.draft === false
+);
+
+articles.sort((a, b) => {
+  const dateA = a.data.date ? a.data.date.getTime() : 0;
+  const dateB = b.data.date ? b.data.date.getTime() : 0;
+  return dateB - dateA;
+});
+---
+
+<BaseLayout
+  title="META — TOKYOBEAST FAN ARCHIVE"
+  description="TOKYOBEASTのゲーム、サービス、制作背景など、作品そのものに関する資料と記事。"
+>
+  <main>
+    <section class="hero">
+      <div class="hero-grid"></div>
+
+      <div class="hero-content">
+        <p class="eyebrow">META / THE WORK ITSELF</p>
+
+        <h1>
+          META
+          <span>作品・サービス</span>
+        </h1>
+
+        <p class="hero-lead">
+          TOKYOBEASTという作品そのものについて。<br />
+          ゲーム、サービス、制作背景などの情報を整理しています。
+        </p>
+      </div>
+
+      <div class="hero-corner hero-corner-tl"></div>
+      <div class="hero-corner hero-corner-br"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading">
+        <p class="section-number">01</p>
+
+        <div>
+          <p class="section-label">META ARCHIVE</p>
+          <h2>作品・サービス</h2>
+        </div>
+      </div>
+
+      <p class="section-intro">
+        TOKYOBEASTの世界観そのものではなく、
+        ゲームやサービス、制作・展開など
+        「TOKYOBEASTという作品」に関する情報をまとめています。
+      </p>
+
+      {
+        articles.length > 0 ? (
+          <div class="article-grid">
+            {articles.map((article) => (
+              <a
+                href={`/articles/${article.id}/`}
+                class="article-card"
+              >
+                <div class="article-card-top">
+                  <span
+                    class={`badge badge-${article.data.level}`}
+                  >
+                    {article.data.level.toUpperCase()}
+                  </span>
+
+                  <span class="article-topic">
+                    {article.data.topics.join(" / ").toUpperCase()}
+                  </span>
+                </div>
+
+                <h3>{article.data.title}</h3>
+
+                <p>{article.data.description}</p>
+
+                <span class="card-arrow">→</span>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div class="empty-note">
+            <span>META ARCHIVE</span>
+            <p>
+              現在、掲載されている記事はありません。
+            </p>
+          </div>
+        )
+      }
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .hero {
+    min-height: 520px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      radial-gradient(
+        circle at 75% 45%,
+        rgba(77, 225, 255, 0.13),
+        transparent 30%
+      ),
+      radial-gradient(
+        circle at 20% 70%,
+        rgba(157, 91, 255, 0.1),
+        transparent 35%
+      ),
+      #080a0f;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.14;
+    background-image:
+      linear-gradient(
+        rgba(255, 255, 255, 0.15) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.15) 1px,
+        transparent 1px
+      );
+    background-size: 48px 48px;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 25%,
+      black 70%,
+      transparent
+    );
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    width: min(1180px, calc(100% - 56px));
+    margin: 0 auto;
+    padding: 100px 0;
+  }
+
+  .eyebrow,
+  .section-label {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    color: #69e7ff;
+  }
+
+  .hero h1 {
+    margin: 22px 0 25px;
+    font-size: clamp(48px, 8vw, 110px);
+    line-height: 0.9;
+    font-weight: 950;
+    letter-spacing: -0.055em;
+  }
+
+  .hero h1 span {
+    display: block;
+    margin-top: 14px;
+    font-size: 0.42em;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+
+  .hero-lead {
+    max-width: 650px;
+    margin: 0;
+    font-size: clamp(15px, 2vw, 19px);
+    color: #b9c1ce;
+    line-height: 1.9;
+  }
+
+  .hero-corner {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-color: rgba(105, 231, 255, 0.45);
+  }
+
+  .hero-corner-tl {
+    top: 34px;
+    left: 34px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+
+  .hero-corner-br {
+    right: 34px;
+    bottom: 34px;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+  }
+
+  .section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 110px 40px;
+  }
+
+  .section-heading {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 35px;
+  }
+
+  .section-number {
+    margin: 3px 0 0;
+    font-size: 11px;
+    font-weight: 800;
+    color: #69e7ff;
+    letter-spacing: 0.1em;
+  }
+
+  .section-heading h2 {
+    margin: 5px 0 0;
+    font-size: clamp(30px, 4vw, 48px);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+  }
+
+  .section-intro {
+    max-width: 750px;
+    margin: 0 0 45px;
+    color: #aeb6c4;
+    line-height: 1.9;
+  }
+
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .article-card {
+    position: relative;
+    min-height: 260px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #0d1119;
+    transition: 0.25s;
+  }
+
+  .article-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(105, 231, 255, 0.45);
+    background: #111722;
+  }
+
+  .article-card-top {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px 8px;
+    border: 1px solid currentColor;
+    font-size: 9px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+
+  .badge-official {
+    color: #69e7ff;
+  }
+
+  .badge-inference {
+    color: #9ca8ff;
+  }
+
+  .badge-theory {
+    color: #c89aff;
+  }
+
+  .badge-fanon {
+    color: #ff9fcf;
+  }
+
+  .badge-doujin {
+    color: #ffbd73;
+  }
+
+  .article-topic {
+    font-size: 9px;
+    color: #697382;
+    letter-spacing: 0.12em;
+  }
+
+  .article-card h3 {
+    margin: 25px 0 12px;
+    font-size: 22px;
+    line-height: 1.4;
+  }
+
+  .article-card p {
+    margin: 0;
+    color: #9da7b5;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .card-arrow {
+    margin-top: auto;
+    padding-top: 20px;
+    color: #69e7ff;
+    font-size: 20px;
+  }
+
+  .empty-note {
+    padding: 35px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .empty-note span {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #69e7ff;
+  }
+
+  .empty-note p {
+    margin: 10px 0 0;
+    color: #8993a2;
+    font-size: 12px;
+  }
+
+  @media (max-width: 1000px) {
+    .article-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 700px) {
+    .section {
+      padding: 75px 20px;
+    }
+
+    .hero {
+      min-height: 480px;
+    }
+
+    .hero-content {
+      width: calc(100% - 36px);
+    }
+
+    .article-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-corner {
+      width: 45px;
+      height: 45px;
+    }
+
+    .hero-corner-tl {
+      top: 20px;
+      left: 20px;
+    }
+
+    .hero-corner-br {
+      right: 20px;
+      bottom: 20px;
+    }
+  }
+</style>

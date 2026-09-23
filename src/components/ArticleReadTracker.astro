@@ -1,0 +1,220 @@
+---
+interface Props {
+  articleId: string;
+}
+
+const { articleId } = Astro.props;
+---
+
+<div
+  class="article-complete"
+  data-article-read
+  data-article-id={articleId}
+>
+  <div class="complete-line"></div>
+
+  <div class="complete-content">
+    <div class="complete-status">
+      <span class="complete-icon">✓</span>
+      <span>ARTICLE COMPLETE</span>
+    </div>
+
+    <p class="complete-message">
+      この記事を読了しました。
+    </p>
+
+    <button type="button" class="complete-button">
+      この記事を読了にする
+    </button>
+  </div>
+</div>
+
+<style>
+  .article-complete {
+    margin-top: 4rem;
+    padding: 2rem;
+    border: 1px solid rgba(0, 229, 255, 0.25);
+    background:
+      linear-gradient(
+        135deg,
+        rgba(0, 229, 255, 0.06),
+        rgba(0, 0, 0, 0.2)
+      );
+  }
+
+  .complete-line {
+    height: 1px;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 229, 255, 0.8),
+      transparent
+    );
+  }
+
+  .complete-content {
+    text-align: center;
+  }
+
+  .complete-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+
+    font-size: 0.85rem;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    color: #00e5ff;
+  }
+
+  .complete-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 1.5rem;
+    height: 1.5rem;
+
+    border: 1px solid #00e5ff;
+    border-radius: 50%;
+
+    font-size: 0.8rem;
+  }
+
+  .complete-message {
+    margin: 1rem 0;
+    color: #aaa;
+    font-size: 0.9rem;
+  }
+
+  .complete-button {
+    padding: 0.7rem 1.2rem;
+
+    border: 1px solid rgba(0, 229, 255, 0.5);
+    background: transparent;
+    color: #00e5ff;
+
+    font-family: inherit;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .complete-button:hover {
+    background: rgba(0, 229, 255, 0.1);
+    border-color: #00e5ff;
+  }
+
+  .article-complete.is-complete {
+    border-color: rgba(0, 229, 255, 0.5);
+  }
+
+  .article-complete.is-complete .complete-button {
+    display: none;
+  }
+
+  .article-complete.is-complete .complete-message {
+    color: #00e5ff;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const STORAGE_KEY = "tokyobeast-read-articles-v1";
+
+    const tracker = document.querySelector("[data-article-read]");
+
+    if (!tracker) return;
+
+    const articleId = tracker.getAttribute("data-article-id");
+
+    if (!articleId) return;
+
+    const button = tracker.querySelector(".complete-button");
+
+    function getReadArticles() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (!saved) return [];
+
+        const parsed = JSON.parse(saved);
+
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveReadArticles(articles) {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(articles)
+        );
+      } catch {
+        // localStorage が利用できない場合は何もしない
+      }
+    }
+
+    function markAsRead() {
+      const articles = getReadArticles();
+
+      if (!articles.includes(articleId)) {
+        articles.push(articleId);
+        saveReadArticles(articles);
+      }
+
+      tracker.classList.add("is-complete");
+
+      window.dispatchEvent(
+        new CustomEvent("tokyobeast:article-read", {
+          detail: {
+            articleId,
+            readArticles: articles
+          }
+        })
+      );
+    }
+
+    function isRead() {
+      return getReadArticles().includes(articleId);
+    }
+
+    // すでに読了済みなら最初から完了状態
+    if (isRead()) {
+      tracker.classList.add("is-complete");
+    }
+
+    // ボタンによる手動読了
+    button?.addEventListener("click", markAsRead);
+
+    // ページを約90%まで読んだら自動的に読了
+    let autoMarked = false;
+
+    function checkScroll() {
+      if (autoMarked || isRead()) return;
+
+      const scrollable =
+        document.documentElement.scrollHeight -
+        window.innerHeight;
+
+      if (scrollable <= 0) return;
+
+      const progress =
+        window.scrollY / scrollable;
+
+      if (progress >= 0.9) {
+        autoMarked = true;
+        markAsRead();
+      }
+    }
+
+    window.addEventListener("scroll", checkScroll, {
+      passive: true
+    });
+  })();
+</script>

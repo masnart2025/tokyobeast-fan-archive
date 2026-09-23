@@ -1,0 +1,751 @@
+---
+export interface WorkViewerPage {
+  image: string;
+  alt?: string;
+}
+
+export interface WorkViewerTextBlock {
+  type: "text" | "image";
+  text?: string;
+  image?: string;
+  alt?: string;
+}
+
+export interface WorkViewerData {
+  direction?: "rtl" | "ltr";
+  pages: WorkViewerPage[];
+
+  alternatePages?: WorkViewerPage[];
+  alternateDirection?: "rtl" | "ltr";
+
+  textVersion?: WorkViewerTextBlock[];
+}
+
+interface Props {
+  viewer: WorkViewerData;
+}
+
+const { viewer } = Astro.props;
+
+const direction = viewer.direction ?? "rtl";
+const pages = viewer.pages ?? [];
+const alternatePages = viewer.alternatePages ?? [];
+const textVersion = viewer.textVersion ?? [];
+
+const alternateDirection =
+  viewer.alternateDirection ?? "ltr";
+
+const hasLanguageSwitch =
+  alternatePages.length > 0;
+
+const directionLabel =
+  direction === "rtl" ? "RIGHT TO LEFT" : "LEFT TO RIGHT";
+---
+
+<section
+  class="work-viewer"
+  data-work-viewer
+  data-direction={direction}
+  data-pages={JSON.stringify(pages)}
+  data-alternate-pages={JSON.stringify(alternatePages)}
+  data-alternate-direction={alternateDirection}
+  aria-label="作品ビューア"
+>
+  {pages.length > 0 && (
+    <>
+<div class="viewer-header">
+
+  <span class="viewer-label">
+    WORLDVIEW COMIC
+  </span>
+
+  <div class="viewer-header-right">
+
+    <span
+      class="viewer-direction"
+      data-viewer-direction
+    >
+      {directionLabel}
+    </span>
+
+    {
+      hasLanguageSwitch && (
+        <div class="viewer-language-switch">
+
+          <button
+            type="button"
+            class="viewer-language-button is-active"
+            data-language="jp"
+          >
+            日本語
+          </button>
+
+          <span class="viewer-language-separator">
+            /
+          </span>
+
+          <button
+            type="button"
+            class="viewer-language-button"
+            data-language="en"
+          >
+            ENGLISH
+          </button>
+
+        </div>
+      )
+    }
+
+  </div>
+
+</div>
+
+      <div class="viewer-stage" data-viewer-stage>
+        <button
+          class="page-hit-area page-hit-area-left"
+          type="button"
+          data-page-action="left"
+          aria-label="左側のページ移動"
+        ></button>
+
+        <img
+          class="viewer-image"
+          src={pages[0].image}
+          alt={pages[0].alt ?? "作品ページ 1"}
+          data-viewer-image
+        />
+
+        <button
+          class="page-hit-area page-hit-area-right"
+          type="button"
+          data-page-action="right"
+          aria-label="右側のページ移動"
+        ></button>
+      </div>
+
+<div
+  class="viewer-controls"
+  data-viewer-controls
+>
+  <button
+    class="viewer-button"
+    type="button"
+    data-page-action="prev"
+    aria-label="前のページ"
+  >
+    <span data-prev-arrow>‹</span>
+    <span data-prev-label>前へ</span>
+  </button>
+
+  <span
+    class="page-counter"
+    aria-live="polite"
+  >
+    <span data-current-page>1</span>
+    <span aria-hidden="true"> / </span>
+    <span data-total-pages>{pages.length}</span>
+  </span>
+
+  <button
+    class="viewer-button"
+    type="button"
+    data-page-action="next"
+    aria-label="次のページ"
+  >
+    <span data-next-label>次へ</span>
+    <span data-next-arrow>›</span>
+  </button>
+</div>
+      <p class="viewer-hint">
+        {direction === "rtl"
+          ? "右から左へ読む作品です"
+          : "左から右へ読む作品です"}
+        <span class="viewer-keyboard-hint">・← → キーでページ移動</span>
+      </p>
+    </>
+  )}
+
+  {textVersion.length > 0 && (
+    <details class="text-version">
+      <summary>TEXT VERSION</summary>
+
+      <div class="text-version-body">
+        {textVersion.map((block) =>
+          block.type === "image" && block.image ? (
+            <figure class="text-version-image">
+              <img
+                src={block.image}
+                alt={block.alt ?? ""}
+                loading="lazy"
+              />
+              {block.alt && <figcaption>{block.alt}</figcaption>}
+            </figure>
+          ) : (
+            block.text && (
+              <p class="text-version-paragraph">{block.text}</p>
+            )
+          )
+        )}
+      </div>
+    </details>
+  )}
+</section>
+
+<script is:inline>
+  (() => {
+    function initWorkViewers() {
+      const viewers = document.querySelectorAll("[data-work-viewer]");
+
+      viewers.forEach((root) => {
+        if (root.dataset.viewerInitialized === "true") return;
+
+        const image = root.querySelector("[data-viewer-image]");
+        const counter = root.querySelector("[data-current-page]");
+        const stage = root.querySelector("[data-viewer-stage]");
+
+        if (!image || !counter || !stage) return;
+
+let pages = [];
+let alternatePages = [];
+
+try {
+  pages = JSON.parse(
+    root.dataset.pages || "[]"
+  );
+
+  alternatePages = JSON.parse(
+    root.dataset.alternatePages || "[]"
+  );
+} catch (error) {
+  console.error(
+    "WorkViewer: page data could not be parsed.",
+    error
+  );
+  return;
+}
+
+if (!Array.isArray(pages) || pages.length === 0) {
+  return;
+}
+
+if (!Array.isArray(alternatePages)) {
+  alternatePages = [];
+}
+
+const directionElement =
+  root.querySelector(
+    "[data-viewer-direction]"
+  );
+
+const originalDirection =
+  root.dataset.direction === "ltr"
+    ? "ltr"
+    : "rtl";
+
+const alternateDirection =
+  root.dataset.alternateDirection === "rtl"
+    ? "rtl"
+    : "ltr";
+
+let activePages = pages;
+let direction = originalDirection;
+let currentLanguage = "jp";
+let current = 0;
+let pointerStartX = null;
+
+function updateControls() {
+  const controls = root.querySelector(
+    "[data-viewer-controls]"
+  );
+
+  const prevButton = root.querySelector(
+    '[data-page-action="prev"]'
+  );
+
+  const nextButton = root.querySelector(
+    '[data-page-action="next"]'
+  );
+
+  const prevArrow = root.querySelector(
+    "[data-prev-arrow]"
+  );
+
+  const nextArrow = root.querySelector(
+    "[data-next-arrow]"
+  );
+
+  if (
+    !controls ||
+    !prevButton ||
+    !nextButton ||
+    !prevArrow ||
+    !nextArrow
+  ) {
+    return;
+  }
+
+  if (direction === "rtl") {
+    // 日本語：右から左
+    prevButton.style.order = "3";
+    nextButton.style.order = "1";
+
+    prevArrow.textContent = "›";
+    nextArrow.textContent = "‹";
+
+  } else {
+    // 英語：左から右
+    prevButton.style.order = "1";
+    nextButton.style.order = "3";
+
+    prevArrow.textContent = "‹";
+    nextArrow.textContent = "›";
+  }
+}
+
+function update() {
+  const page = activePages[current];
+
+  if (!page) return;
+
+  image.src = page.image;
+
+  image.alt =
+    page.alt ||
+    `作品ページ ${current + 1}`;
+
+  counter.textContent =
+    String(current + 1);
+
+  const prevButton =
+    root.querySelector(
+      '[data-page-action="prev"]'
+    );
+
+  const nextButton =
+    root.querySelector(
+      '[data-page-action="next"]'
+    );
+
+  if (prevButton) {
+    prevButton.disabled =
+      current === 0;
+  }
+
+  if (nextButton) {
+    nextButton.disabled =
+      current === activePages.length - 1;
+  }
+
+  const directionElement =
+    root.querySelector(
+      "[data-viewer-direction]"
+    );
+
+  if (directionElement) {
+    directionElement.textContent =
+      direction === "rtl"
+        ? "RIGHT TO LEFT"
+        : "LEFT TO RIGHT";
+  }
+
+updateControls();
+
+}
+
+function switchLanguage(language) {
+
+  if (
+    language === "en" &&
+    alternatePages.length > 0
+  ) {
+    currentLanguage = "en";
+
+    activePages =
+      alternatePages;
+
+    direction =
+      alternateDirection;
+
+  } else {
+    currentLanguage = "jp";
+
+    activePages =
+      pages;
+
+    direction =
+      originalDirection;
+  }
+
+  current = 0;
+
+  root
+    .querySelectorAll(
+      "[data-language]"
+    )
+    .forEach((button) => {
+
+      button.classList.toggle(
+        "is-active",
+        button.dataset.language ===
+          currentLanguage
+      );
+
+    });
+
+  update();
+}
+
+        function previous() {
+          if (current === 0) return;
+          current -= 1;
+          update();
+        }
+
+        function next() {
+          if (current >= pages.length - 1) return;
+          current += 1;
+          update();
+        }
+
+        function moveBySide(side) {
+          if (direction === "rtl") {
+            side === "left" ? next() : previous();
+          } else {
+            side === "left" ? previous() : next();
+          }
+        }
+
+        root
+          .querySelector('[data-page-action="left"]')
+          ?.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            moveBySide("left");
+          });
+
+        root
+          .querySelector('[data-page-action="right"]')
+          ?.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            moveBySide("right");
+          });
+
+        root
+          .querySelector('[data-page-action="prev"]')
+          ?.addEventListener("click", (event) => {
+            event.preventDefault();
+            previous();
+          });
+
+        root
+          .querySelector('[data-page-action="next"]')
+          ?.addEventListener("click", (event) => {
+            event.preventDefault();
+            next();
+          });
+
+root
+  .querySelectorAll("[data-language]")
+  .forEach((button) => {
+
+    button.addEventListener(
+      "click",
+      () => {
+        switchLanguage(
+          button.dataset.language
+        );
+      }
+    );
+
+  });
+
+        stage.addEventListener("pointerdown", (event) => {
+          pointerStartX = event.clientX;
+        });
+
+        stage.addEventListener("pointerup", (event) => {
+          if (pointerStartX === null) return;
+
+          const diff = event.clientX - pointerStartX;
+          pointerStartX = null;
+
+          if (Math.abs(diff) < 50) return;
+
+          if (direction === "rtl") {
+            diff < 0 ? next() : previous();
+          } else {
+            diff > 0 ? next() : previous();
+          }
+        });
+
+        update();
+        root.dataset.viewerInitialized = "true";
+      });
+    }
+
+    function handleKeyboard(event) {
+      const root = document.querySelector("[data-work-viewer]");
+      if (!root) return;
+
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+        return;
+      }
+
+      const direction =
+        root.dataset.direction === "ltr" ? "ltr" : "rtl";
+
+      const nextButton = root.querySelector(
+        '[data-page-action="next"]'
+      );
+      const prevButton = root.querySelector(
+        '[data-page-action="prev"]'
+      );
+
+      event.preventDefault();
+
+      if (direction === "rtl") {
+        if (event.key === "ArrowLeft") {
+          nextButton?.click();
+        } else {
+          prevButton?.click();
+        }
+      } else {
+        if (event.key === "ArrowRight") {
+          nextButton?.click();
+        } else {
+          prevButton?.click();
+        }
+      }
+    }
+
+    initWorkViewers();
+    document.addEventListener("keydown", handleKeyboard);
+    document.addEventListener("astro:page-load", initWorkViewers);
+  })();
+</script>
+
+<style>
+  .work-viewer {
+    width: 100%;
+    margin: 3rem 0;
+  }
+
+  .viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+  }
+
+  .viewer-stage {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 300px;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  .viewer-image {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+.viewer-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.viewer-language-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.viewer-language-button {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #68737d;
+
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: .08em;
+
+  cursor: pointer;
+}
+
+.viewer-language-button:hover {
+  color: #69e7ff;
+}
+
+.viewer-language-button.is-active {
+  color: #69e7ff;
+}
+
+.viewer-language-separator {
+  color: #3d4650;
+
+  font-size: 9px;
+}
+
+  .page-hit-area {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    width: 50%;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .page-hit-area-left {
+    left: 0;
+  }
+
+  .page-hit-area-right {
+    right: 0;
+  }
+
+  .page-hit-area:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .page-hit-area:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+
+  .viewer-controls {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 1.25rem;
+  }
+
+  .viewer-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 0;
+    padding: 0.5rem 0.25rem;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .viewer-button:hover:not(:disabled) {
+    opacity: 0.65;
+  }
+
+  .viewer-button:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+
+  .page-counter {
+    min-width: 4rem;
+    text-align: center;
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+
+  .viewer-hint {
+    margin: 0.75rem 0 0;
+    text-align: center;
+    font-size: 0.7rem;
+    opacity: 0.5;
+  }
+
+  .text-version {
+    margin-top: 4rem;
+    border-top: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .text-version summary {
+    padding: 1rem 0;
+    cursor: pointer;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    list-style-position: inside;
+  }
+
+  .text-version-body {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+  }
+
+  .text-version-paragraph {
+    margin: 0 0 1.5rem;
+    line-height: 2;
+    white-space: pre-wrap;
+  }
+
+  .text-version-image {
+    margin: 2.5rem auto;
+  }
+
+  .text-version-image img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    object-fit: contain;
+  }
+
+  .text-version-image figcaption {
+    margin-top: 0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 640px) {
+    .viewer-image {
+      max-height: 72vh;
+    }
+
+    .viewer-controls {
+      gap: 1rem;
+    }
+
+    .viewer-keyboard-hint {
+      display: none;
+    }
+
+    .text-version-body {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+</style>

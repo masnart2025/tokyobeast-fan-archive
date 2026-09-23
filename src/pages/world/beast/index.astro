@@ -1,0 +1,678 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+const articles = await getCollection(
+  "articles",
+  ({ data }) =>
+    data.category === "world" &&
+    data.topic === "beast" &&
+    data.draft === false
+);
+
+const levelOrder = [
+  "official",
+  "inference",
+  "theory",
+  "fanon",
+  "doujin",
+];
+
+const levelLabels = {
+  official: "OFFICIAL",
+  inference: "INFERENCE",
+  theory: "THEORY",
+  fanon: "FANON",
+  doujin: "DOUJIN",
+};
+
+const levelDescriptions = {
+  official: "公式資料・公式設定として確認できる情報。",
+  inference: "複数の公式情報から導ける推測。",
+  theory: "意味や背景についての個人的な考察・仮説。",
+  fanon: "公式設定とは区別した個人的な想像・IF。",
+  doujin: "Masnartの二次創作作品内でのみ扱う設定。",
+};
+
+const groupedArticles = Object.fromEntries(
+  levelOrder.map((level) => [
+    level,
+    articles.filter((article) => article.data.level === level),
+  ])
+);
+
+const levelCounts = {
+  official: groupedArticles.official.length,
+  inference: groupedArticles.inference.length,
+  theory: groupedArticles.theory.length,
+  fanon: groupedArticles.fanon.length,
+  doujin: groupedArticles.doujin.length,
+};
+---
+
+<BaseLayout
+  pageTitle="BEAST | WORLD | TOKYOBEAST FAN ARCHIVE"
+  description="TOKYOBEASTにおけるBEASTについての資料・考察を整理する。"
+>
+  <main>
+
+    <!-- HERO -->
+
+    <header class="topic-header">
+      <div class="topic-header-grid">
+
+        <div class="topic-header-inner">
+
+          <div class="breadcrumb">
+            <a href="/world/">WORLD</a>
+            <span>/</span>
+            <span>BEAST</span>
+          </div>
+
+          <div class="topic-label">
+            WORLD ARCHIVE / 01
+          </div>
+
+          <h1>BEAST</h1>
+
+          <p class="topic-lead">
+            TOKYOBEASTにおけるBEASTについて、
+            公式情報・考察・ファノンを区別して整理する。
+          </p>
+
+        </div>
+
+      </div>
+    </header>
+
+
+    <!-- ARCHIVE STATUS -->
+
+    <section class="archive-status">
+
+      <div class="section-heading">
+        <span>ARCHIVE STATUS</span>
+        <small>BEAST RECORDS</small>
+      </div>
+
+      <div class="status-grid">
+
+        <div class="status-item status-total">
+          <strong>{articles.length.toString().padStart(2, "0")}</strong>
+          <span>RECORDS</span>
+        </div>
+
+        {
+          levelOrder.map((level) => (
+            <div class="status-item">
+              <strong>
+                {levelCounts[level].toString().padStart(2, "0")}
+              </strong>
+              <span>{levelLabels[level]}</span>
+            </div>
+          ))
+        }
+
+      </div>
+
+    </section>
+
+
+    <!-- ARCHIVE -->
+
+    <section class="archive-list">
+
+      <div class="section-heading archive-main-heading">
+        <span>ARCHIVE</span>
+        <small>{articles.length} RECORDS FOUND</small>
+      </div>
+
+      {
+        levelOrder.map((level) => {
+          const levelArticles = groupedArticles[level];
+
+          if (levelArticles.length === 0) {
+            return null;
+          }
+
+          return (
+            <section class={`level-section level-${level}`}>
+
+              <header class="level-header">
+
+                <div>
+                  <div class="level-title-row">
+
+                    <span class="level-badge">
+                      {levelLabels[level]}
+                    </span>
+
+                    <span class="level-count">
+                      {levelArticles.length.toString().padStart(2, "0")}
+                    </span>
+
+                  </div>
+
+                  <p>
+                    {levelDescriptions[level]}
+                  </p>
+                </div>
+
+              </header>
+
+
+              <div class="article-grid">
+
+                {
+                  levelArticles.map((article) => (
+                    <a
+                      class="article-card"
+                      href={`/articles/${article.id}/`}
+                    >
+
+                      <div class="card-top">
+
+                        <span class="card-id">
+                          {article.data.articleId}
+                        </span>
+
+                        <span class="card-arrow">
+                          ↗
+                        </span>
+
+                      </div>
+
+                      <h2>
+                        {article.data.title}
+                      </h2>
+
+                      <p class="card-description">
+                        {article.data.description}
+                      </p>
+
+                      {
+                        article.data.tags.length > 0 && (
+                          <div class="card-tags">
+                            {
+                              article.data.tags.map((tag) => (
+                                <span>#{tag}</span>
+                              ))
+                            }
+                          </div>
+                        )
+                      }
+
+                      <div class="card-footer">
+                        <span>READ ARTICLE</span>
+                        <span>→</span>
+                      </div>
+
+                    </a>
+                  ))
+                }
+
+              </div>
+
+            </section>
+          );
+        })
+      }
+
+    </section>
+
+
+    <!-- BACK -->
+
+    <section class="topic-footer">
+
+      <a href="/world/">
+        ← BACK TO WORLD ARCHIVE
+      </a>
+
+    </section>
+
+  </main>
+</BaseLayout>
+
+
+<style>
+
+  main {
+    min-height: 100vh;
+  }
+
+
+  /* ==============================
+     TOPIC HEADER
+  ============================== */
+
+  .topic-header {
+    position: relative;
+
+    padding: 110px 24px 90px;
+
+    border-bottom: 1px solid rgba(84, 223, 255, 0.15);
+
+    background:
+      linear-gradient(
+        rgba(84, 223, 255, 0.025) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        rgba(84, 223, 255, 0.025) 1px,
+        transparent 1px
+      );
+
+    background-size: 40px 40px;
+  }
+
+
+  .topic-header-grid {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+
+  .topic-header-inner {
+    max-width: 800px;
+  }
+
+
+  .breadcrumb {
+    display: flex;
+    gap: 10px;
+
+    margin-bottom: 45px;
+
+    color: #56666d;
+
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+
+  .breadcrumb a {
+    color: #54dfff;
+    text-decoration: none;
+  }
+
+
+  .topic-label {
+    margin-bottom: 18px;
+
+    color: #54dfff;
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.18em;
+  }
+
+
+  .topic-header h1 {
+    margin: 0;
+
+    font-size: clamp(60px, 12vw, 130px);
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+  }
+
+
+  .topic-lead {
+    max-width: 620px;
+
+    margin: 35px 0 0;
+
+    color: #9caab0;
+
+    font-size: 15px;
+    line-height: 2;
+  }
+
+
+  /* ==============================
+     SECTION HEADING
+  ============================== */
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+
+    margin-bottom: 25px;
+
+    padding-bottom: 14px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+
+  .section-heading span {
+    color: #54dfff;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: 0.16em;
+  }
+
+
+  .section-heading small {
+    color: #56666d;
+
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+
+
+  /* ==============================
+     STATUS
+  ============================== */
+
+  .archive-status {
+    max-width: 1000px;
+
+    margin: 0 auto;
+
+    padding: 60px 24px;
+  }
+
+
+  .status-grid {
+    display: grid;
+
+    grid-template-columns: 1.5fr repeat(5, 1fr);
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+
+  .status-item {
+    min-height: 100px;
+
+    padding: 20px;
+
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+
+  .status-item strong {
+    display: block;
+
+    color: #dce5e8;
+
+    font-size: 30px;
+    line-height: 1;
+  }
+
+
+  .status-item span {
+    display: block;
+
+    margin-top: 12px;
+
+    color: #66767d;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+  }
+
+
+  .status-total {
+    background: rgba(84, 223, 255, 0.025);
+  }
+
+
+  .status-total strong {
+    color: #54dfff;
+  }
+
+
+  /* ==============================
+     ARCHIVE LIST
+  ============================== */
+
+  .archive-list {
+    max-width: 1000px;
+
+    margin: 0 auto;
+
+    padding: 20px 24px 80px;
+  }
+
+
+  .archive-main-heading {
+    margin-bottom: 60px;
+  }
+
+
+  .level-section {
+    margin-bottom: 70px;
+  }
+
+
+  .level-header {
+    margin-bottom: 25px;
+
+    padding: 20px 0;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+
+  .level-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+
+  .level-badge {
+    display: inline-block;
+
+    padding: 5px 8px;
+
+    border: 1px solid rgba(84, 223, 255, 0.35);
+
+    color: #54dfff;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+  }
+
+
+  .level-count {
+    color: #56666d;
+
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+
+  .level-header p {
+    max-width: 650px;
+
+    margin: 12px 0 0;
+
+    color: #66767d;
+
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+
+  /* ==============================
+     ARTICLE CARDS
+  ============================== */
+
+  .article-grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+  }
+
+
+  .article-card {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 270px;
+
+    padding: 24px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: rgba(255, 255, 255, 0.012);
+
+    color: inherit;
+
+    text-decoration: none;
+
+    transition:
+      border-color 0.2s ease,
+      background 0.2s ease,
+      transform 0.2s ease;
+  }
+
+
+  .article-card:hover {
+    border-color: rgba(84, 223, 255, 0.35);
+
+    background: rgba(84, 223, 255, 0.025);
+
+    transform: translateY(-2px);
+  }
+
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+
+    color: #56666d;
+
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+
+
+  .card-arrow {
+    color: #54dfff;
+
+    font-size: 14px;
+  }
+
+
+  .article-card h2 {
+    margin: 35px 0 15px;
+
+    color: #dce5e8;
+
+    font-size: 23px;
+    line-height: 1.35;
+  }
+
+
+  .card-description {
+    margin: 0;
+
+    color: #7f8d93;
+
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    margin-top: 20px;
+  }
+
+
+  .card-tags span {
+    color: #56666d;
+
+    font-size: 8px;
+
+    letter-spacing: 0.04em;
+  }
+
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+
+    margin-top: auto;
+    padding-top: 25px;
+
+    color: #54dfff;
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+  }
+
+
+  /* ==============================
+     FOOTER
+  ============================== */
+
+  .topic-footer {
+    max-width: 1000px;
+
+    margin: 0 auto;
+
+    padding: 0 24px 100px;
+  }
+
+
+  .topic-footer a {
+    color: #54dfff;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+
+    text-decoration: none;
+  }
+
+
+  /* ==============================
+     MOBILE
+  ============================== */
+
+  @media (max-width: 700px) {
+
+    .topic-header {
+      padding-top: 80px;
+    }
+
+    .status-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .status-total {
+      grid-column: span 2;
+    }
+
+    .article-grid {
+      grid-template-columns: 1fr;
+    }
+
+  }
+
+</style>

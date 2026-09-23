@@ -1,0 +1,650 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const articles = await getCollection(
+  "articles",
+  ({ data }) =>
+    data.category === "world" &&
+    data.draft === false
+);
+
+const topics = [
+  {
+    id: "world",
+    title: "WORLD",
+    description: "TOKYOBEASTの舞台となる世界そのものについて。",
+    tags: ["世界観", "2124", "TOKYOBEAST"],
+  },
+  {
+    id: "history",
+    title: "HISTORY",
+    description: "TOKYOBEAST世界の歴史や、現在に至るまでの変化について。",
+    tags: ["歴史", "100年", "未来"],
+  },
+  {
+    id: "human",
+    title: "HUMAN",
+    description: "TOKYOBEAST世界における人間について。",
+    tags: ["人間", "社会", "信仰"],
+  },
+  {
+    id: "replicant",
+    title: "REPLICANT",
+    description: "意思を持つアンドロイド、レプリカントについて。",
+    tags: ["レプリカント", "アンドロイド", "意思"],
+  },
+  {
+    id: "beast",
+    title: "BEAST",
+    description: "TOKYOBEAST世界に存在するBEASTについて。",
+    tags: ["BEAST", "生命", "身体"],
+  },
+  {
+    id: "biology",
+    title: "BIOLOGY",
+    description: "BEASTの身体構造や、生物としての性質について。",
+    tags: ["身体構造", "生物", "筋肉"],
+  },
+  {
+    id: "social",
+    title: "SOCIAL",
+    description: "人間・レプリカント・BEASTの社会的な関係について。",
+    tags: ["社会", "階層", "格差"],
+  },
+  {
+    id: "religion",
+    title: "RELIGION",
+    description: "人間をめぐる信仰と、TOKYOBEAST世界の宗教について。",
+    tags: ["宗教", "信仰", "人間"],
+  },
+  {
+    id: "xenokarate",
+    title: "XENO-KARATE",
+    description: "BEASTたちの生存や文化から生まれたXENO-KARATEについて。",
+    tags: ["XENO-KARATE", "BEAST", "文化"],
+  },
+  {
+    id: "community",
+    title: "COMMUNITY",
+    description: "社会から外れたBEASTたちの暮らしやコミュニティについて。",
+    tags: ["BEAST", "コミュニティ", "野良BEAST"],
+  },
+  {
+    id: "japan",
+    title: "JAPAN",
+    description: "日本という土地とTOKYOBEASTの世界観との関係について。",
+    tags: ["日本", "東京", "BEAST"],
+  },
+  {
+    id: "theme",
+    title: "THEME",
+    description: "TOKYOBEASTという作品そのものが投げかけるテーマについて。",
+    tags: ["思考実験", "倫理", "作品テーマ"],
+  },
+  {
+    id: "war",
+    title: "WAR",
+    description: "BEASTやレプリカントと戦争との関係について。",
+    tags: ["戦争", "BEAST", "レプリカント"],
+  },
+  {
+    id: "work",
+    title: "WORK",
+    description: "BEASTが社会の中で担う仕事や役割について。",
+    tags: ["仕事", "BEAST", "社会"],
+  },
+];
+
+---
+
+<BaseLayout
+  pageTitle="WORLD | TOKYOBEAST FAN ARCHIVE"
+  description="TOKYOBEASTの世界観を、公式情報・考察・FANON・二次創作設定に分けて整理するアーカイブ。"
+>
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">TOKYOBEAST FAN ARCHIVE</p>
+
+        <h1>WORLD</h1>
+
+        <p class="hero-lead">
+          TOKYOBEASTの世界観を、さまざまな角度から記録・整理する。
+        </p>
+      </div>
+    </section>
+
+
+<!-- WORLD TOPICS -->
+<section class="section">
+
+  <div class="section-heading">
+    <h2>WORLD TOPICS</h2>
+
+    <p>
+      TOKYOBEASTの世界観を構成するテーマごとに記事を整理しています。
+    </p>
+  </div>
+
+
+      <div class="topic-grid">
+
+  {
+    topics.map((topic, index) => {
+
+const topicArticles = articles.filter(
+  (article) => article.data.topics.includes(topic.id)
+);
+
+      return (
+        <article class="topic-card">
+
+          <div class="topic-number">
+            {String(index + 1).padStart(2, "0")}
+          </div>
+
+          <h3>{topic.title}</h3>
+
+          <p class="topic-description">
+            {topic.description}
+          </p>
+
+          <div class="tag-list">
+            {
+              topic.tags.map((tag) => (
+                <span class="tag">#{tag}</span>
+              ))
+            }
+          </div>
+
+
+          <!-- ARTICLES -->
+
+          {
+            topicArticles.length > 0 ? (
+
+              <div class="topic-articles">
+
+                <div class="articles-label">
+                  ARTICLES
+                </div>
+
+                {
+                  topicArticles.map((article) => (
+
+                    <a
+                      href={`/articles/${article.id}/`}
+                      class="article-link"
+                    >
+
+                      <div class="article-link-meta">
+
+                        <span class={`article-level level-${article.data.level}`}>
+                          {article.data.level.toUpperCase()}
+                        </span>
+
+<span class="article-topic">
+  {article.data.topics.join(" / ").toUpperCase()}
+</span>
+
+                      </div>
+
+                      <strong>
+                        {article.data.title}
+                      </strong>
+
+                      <p>
+                        {article.data.description}
+                      </p>
+
+                    </a>
+
+                  ))
+                }
+
+              </div>
+
+            ) : (
+
+              <div class="topic-placeholder">
+                ARTICLES / COMING SOON
+              </div>
+
+            )
+          }
+
+        </article>
+      );
+    })
+  }
+
+</div>
+
+    </section>
+
+  </main>
+</BaseLayout>
+
+
+<style>
+
+  :global(body) {
+    margin: 0;
+    background:
+      radial-gradient(
+        circle at 80% 10%,
+        rgba(0, 220, 255, 0.08),
+        transparent 30%
+      ),
+      #07090d;
+    color: #eef4f7;
+  }
+
+
+  main {
+    overflow: hidden;
+  }
+
+
+  /* ------------------------------
+     HERO
+  ------------------------------ */
+
+  .hero {
+    position: relative;
+    padding: 110px 24px 100px;
+    border-bottom: 1px solid rgba(0, 220, 255, 0.18);
+
+    background-image:
+      linear-gradient(
+        rgba(0, 220, 255, 0.035) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        rgba(0, 220, 255, 0.035) 1px,
+        transparent 1px
+      );
+
+    background-size: 42px 42px;
+  }
+
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    right: -180px;
+    top: -180px;
+    width: 520px;
+    height: 520px;
+
+    border: 1px solid rgba(0, 220, 255, 0.12);
+    border-radius: 50%;
+
+    box-shadow:
+      0 0 80px rgba(0, 220, 255, 0.05);
+
+    pointer-events: none;
+  }
+
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+
+  .eyebrow {
+    margin: 0 0 18px;
+
+    color: #54dfff;
+
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+
+
+  .hero h1 {
+    margin: 0;
+
+    font-size: clamp(56px, 10vw, 120px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+  }
+
+
+  .hero-lead {
+    max-width: 700px;
+    margin: 36px 0 0;
+
+    font-size: 20px;
+    line-height: 1.8;
+    color: #d7e2e7;
+  }
+
+
+  .hero-note {
+    max-width: 700px;
+    margin: 26px 0 0;
+
+    padding-left: 18px;
+
+    border-left: 2px solid #54dfff;
+
+    color: #899aa3;
+    font-size: 14px;
+    line-height: 1.9;
+  }
+
+
+  .hero-note strong {
+    color: #eef4f7;
+  }
+
+
+  /* ------------------------------
+     COMMON
+  ------------------------------ */
+
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 100px 24px;
+  }
+
+
+  .section-heading {
+    margin-bottom: 42px;
+  }
+
+
+  .section-number {
+    margin: 0 0 8px;
+
+    color: #54dfff;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+  }
+
+
+  .section-heading h2 {
+    margin: 0 0 18px;
+
+    font-size: clamp(28px, 5vw, 48px);
+    letter-spacing: -0.02em;
+  }
+
+
+  .section-heading > p:last-child {
+    max-width: 720px;
+
+    margin: 0;
+
+    color: #8e9da5;
+    line-height: 1.8;
+  }
+
+
+  
+  /* ------------------------------
+     TOPICS
+  ------------------------------ */
+
+  .topic-grid {
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+  }
+
+
+  .topic-card {
+    position: relative;
+
+    min-height: 250px;
+    padding: 30px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.035),
+        rgba(255, 255, 255, 0.01)
+      );
+
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+
+  .topic-card:hover {
+    transform: translateY(-3px);
+
+    border-color: rgba(84, 223, 255, 0.35);
+  }
+
+
+  .topic-number {
+    margin-bottom: 35px;
+
+    color: #54dfff;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+  }
+
+
+  .topic-card h3 {
+    margin: 0 0 12px;
+
+    font-size: 26px;
+    letter-spacing: 0.02em;
+  }
+
+
+  .topic-description {
+    max-width: 500px;
+
+    margin: 0;
+
+    color: #96a5ac;
+    line-height: 1.7;
+  }
+
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+
+    margin-top: 20px;
+  }
+
+
+  .tag {
+    padding: 5px 8px;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+
+    color: #8f9da3;
+
+    font-size: 10px;
+  }
+
+/* ------------------------------
+   TOPIC ARTICLES
+------------------------------ */
+
+.topic-articles {
+  margin-top: 28px;
+}
+
+
+.articles-label {
+  margin-bottom: 10px;
+
+  color: #54dfff;
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+
+.article-link {
+  display: block;
+
+  padding: 15px 16px;
+
+  border: 1px solid rgba(84, 223, 255, 0.14);
+
+  background: rgba(84, 223, 255, 0.025);
+
+  color: inherit;
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.article-link:hover {
+  background: rgba(84, 223, 255, 0.06);
+
+  border-color: rgba(84, 223, 255, 0.35);
+}
+
+
+.article-link + .article-link {
+  margin-top: 7px;
+}
+
+
+.article-link-meta {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 8px;
+}
+
+
+.article-level {
+  display: inline-flex;
+  width: fit-content;
+
+  padding: 4px 6px;
+
+  border: 1px solid currentColor;
+
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.1em;
+
+  white-space: nowrap;
+}
+
+/* INFORMATION LEVEL COLORS */
+/* HOMEと同じ色体系 */
+
+.article-level.level-official {
+  color: #69e7ff;
+  background: rgba(105, 231, 255, 0.06);
+}
+
+.article-level.level-inference {
+  color: #9ca8ff;
+  background: rgba(156, 168, 255, 0.06);
+}
+
+.article-level.level-theory {
+  color: #c89aff;
+  background: rgba(200, 154, 255, 0.06);
+}
+
+.article-level.level-fanon {
+  color: #ff9fcf;
+  background: rgba(255, 159, 207, 0.06);
+}
+
+.article-level.level-doujin {
+  color: #ffbd73;
+  background: rgba(255, 189, 115, 0.06);
+}
+
+
+.article-topic {
+  color: #586970;
+
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+
+.article-link strong {
+  display: block;
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+.article-link p {
+  margin: 6px 0 0;
+
+  color: #7f8e94;
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+  .topic-placeholder {
+    margin-top: 28px;
+
+    color: #53636a;
+
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+  }
+
+ 
+  /* ------------------------------
+     RESPONSIVE
+  ------------------------------ */
+
+  @media (max-width: 650px) {
+
+    .hero {
+      padding-top: 80px;
+    }
+
+
+    .section {
+      padding-top: 70px;
+      padding-bottom: 70px;
+    }
+
+    .topic-grid {
+      grid-template-columns: 1fr;
+    }
+
+  }
+
+</style>

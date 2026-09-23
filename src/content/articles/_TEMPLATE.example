@@ -1,0 +1,32 @@
+---
+articleId: "xxxxx"
+title: "記事タイトル"
+description: "この記事の概要を1〜2文で書く。"
+
+category: world
+topic: beast
+level: official
+
+tags:
+  - BEAST
+  - 世界観
+
+images: []
+
+date: 2026-09-14
+
+source: []
+reference: []
+related: []
+next: []
+
+draft: true
+---
+
+# 記事タイトル
+
+ここに記事本文を書きます。
+
+## SOURCE
+
+ここに公式情報の出典などを書きます。
