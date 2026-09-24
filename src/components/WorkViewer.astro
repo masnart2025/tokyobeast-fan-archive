@@ -472,11 +472,11 @@ root
 
           if (Math.abs(diff) < 50) return;
 
-          if (direction === "rtl") {
-            diff < 0 ? next() : previous();
-          } else {
-            diff > 0 ? next() : previous();
-          }
+if (direction === "rtl") {
+  diff > 0 ? next() : previous();
+} else {
+  diff < 0 ? next() : previous();
+}
         });
 
         update();
