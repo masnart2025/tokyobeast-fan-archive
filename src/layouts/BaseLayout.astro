@@ -1,4 +1,7 @@
 ---
+import { getCollection } from "astro:content";
+import CompletionModal from "../components/CompletionModal.astro";
+
 interface Props {
   title?: string;
   description?: string;
@@ -8,6 +11,13 @@ const {
   title = "TOKYOBEAST FAN ARCHIVE",
   description = "TOKYOBEASTについての公式情報、考察、二次創作設定、同人作品をまとめた個人ファンアーカイブ。",
 } = Astro.props;
+
+const articles = await getCollection(
+  "articles",
+  ({ data }) => data.draft === false
+);
+
+const articleIds = articles.map((article) => article.id);
 ---
 
 <!doctype html>
@@ -41,6 +51,11 @@ const {
 
       </div>
     </header>
+
+    <CompletionModal
+      totalArticles={articleIds.length}
+      articleIds={articleIds}
+    />
 
     <main>
       <slot />

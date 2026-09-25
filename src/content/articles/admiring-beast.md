@@ -1,5 +1,5 @@
 ---
-articleId: long-to-beast
+articleId: admiring-beast
 title: あこがれるビースト
 description: ドラゴンに憧れるビーストが、勝つことではなく「どう在りたいか」と向き合う短編。
 category: fan-works
